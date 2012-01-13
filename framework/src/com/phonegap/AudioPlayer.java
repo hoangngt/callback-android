@@ -20,6 +20,7 @@ package com.phonegap;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -39,7 +40,7 @@ import java.io.IOException;
  * 		android_asset: 		file name must start with /android_asset/sound.mp3
  * 		sdcard:				file name is just sound.mp3
  */
-public class AudioPlayer implements OnCompletionListener, OnPreparedListener, OnErrorListener {
+public class AudioPlayer implements OnCompletionListener, OnPreparedListener, OnErrorListener, OnBufferingUpdateListener {
 
     private static final String LOG_TAG = "AudioPlayer";
 
@@ -54,6 +55,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	private static int MEDIA_STATE = 1;
 	private static int MEDIA_DURATION = 2;
     private static int MEDIA_POSITION = 3;
+    private static int MEDIA_BUFFER = 4;
 	private static int MEDIA_ERROR = 9;
 	
 	// Media error codes
@@ -200,12 +202,13 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 				this.audioFile = file;
 				
 				// If streaming file
-				if (this.isStreaming(file)) {
-					this.mPlayer.setDataSource(file);
+				if (this.isStreaming("http://mp3.zing.vn/html5/song/LnJnyLnNlmRALpkyyDmZm")) {
+					this.mPlayer.setDataSource("http://mp3.zing.vn/html5/song/LnJnyLnNlmRALpkyyDmZm");
 					this.mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
 					this.setState(MEDIA_STARTING);
 					this.mPlayer.setOnPreparedListener(this);		
 					this.mPlayer.prepareAsync();
+					
 				}
 				
 				// If local file
@@ -297,6 +300,16 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 		this.setState(MEDIA_STOPPED);
     } 
 	
+	/**
+	 * Called to update status in buffering a media stream received through progressive HTTP download.
+	 * 
+	 * @param mPlayer			The MediaPlayer that reached the end of the file 
+	 * @param percent 			The Percentage (0-100) of the content that has been buffered or played thus far
+	 */
+	public void onBufferingUpdate(MediaPlayer mPlayer, int percent) {
+		this.handler.sendJavascript("PhoneGap.Media.onStatus('" + this.id + "', "+MEDIA_BUFFER+", "+percent+");");
+    } 
+	
     /**
      * Get current position of playback.
      * 
@@ -368,7 +381,7 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 	public void onPrepared(MediaPlayer mPlayer) {
 		// Listen for playback completion
 		this.mPlayer.setOnCompletionListener(this);
-
+		this.mPlayer.setOnBufferingUpdateListener(this);
 		// If start playing after prepared
 		if (!this.prepareOnly) {
 			

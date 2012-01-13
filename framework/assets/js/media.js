@@ -34,7 +34,7 @@ PhoneGap.addResource("media");
  * @param positionCallback      The callback to be called when media position has changed.
  *                                  positionCallback(long position) - OPTIONAL
  */
-var Media = function(src, successCallback, errorCallback, statusCallback, positionCallback) {
+var Media = function(src, successCallback, errorCallback, statusCallback, positionCallback, bufferCallback) {
 
     // successCallback optional
     if (successCallback && (typeof successCallback !== "function")) {
@@ -59,7 +59,12 @@ var Media = function(src, successCallback, errorCallback, statusCallback, positi
         console.log("Media Error: positionCallback is not a function");
         return;
     }
-
+    
+    // bufferCallback optional
+    if (bufferCallback && (typeof bufferCallback !== "function")) {
+        console.log("Media Error: bufferCallback is not a function");
+        return;
+    }
     this.id = PhoneGap.createUUID();
     PhoneGap.mediaObjects[this.id] = this;
     this.src = src;
@@ -67,6 +72,7 @@ var Media = function(src, successCallback, errorCallback, statusCallback, positi
     this.errorCallback = errorCallback;
     this.statusCallback = statusCallback;
     this.positionCallback = positionCallback;
+    this.bufferCallback = bufferCallback;
     this._duration = -1;
     this._position = -1;
 };
@@ -75,6 +81,7 @@ var Media = function(src, successCallback, errorCallback, statusCallback, positi
 Media.MEDIA_STATE = 1;
 Media.MEDIA_DURATION = 2;
 Media.MEDIA_POSITION = 3;
+Media.MEDIA_BUFFER = 4;
 Media.MEDIA_ERROR = 9;
 
 // Media states
@@ -228,6 +235,11 @@ PhoneGap.Media.onStatus = function(id, msg, value) {
     }
     else if (msg === Media.MEDIA_POSITION) {
         media._position = value;
+    }
+    else if (msg === Media.MEDIA_BUFFER) {
+    	if (media.bufferCallback) {
+            media.bufferCallback(value);
+        }
     }
 };
 }

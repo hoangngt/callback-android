@@ -202,8 +202,8 @@ public class AudioPlayer implements OnCompletionListener, OnPreparedListener, On
 				this.audioFile = file;
 				
 				// If streaming file
-				if (this.isStreaming("http://mp3.zing.vn/html5/song/LnJnyLnNlmRALpkyyDmZm")) {
-					this.mPlayer.setDataSource("http://mp3.zing.vn/html5/song/LnJnyLnNlmRALpkyyDmZm");
+				if (this.isStreaming(file)) {
+					this.mPlayer.setDataSource(file);
 					this.mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);  
 					this.setState(MEDIA_STARTING);
 					this.mPlayer.setOnPreparedListener(this);		
